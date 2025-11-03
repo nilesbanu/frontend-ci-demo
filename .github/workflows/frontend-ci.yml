@@ -1,43 +1,53 @@
-name: Frontend CI Pipeline
+name: Frontend CI
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0  # Required for SonarCloud
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: '18'
 
       - name: Install dependencies
         run: npm ci
 
       - name: Run ESLint
-        run: npx eslint .
+        run: npx eslint . --ext .js,.jsx
 
       - name: Run Prettier check
         run: npx prettier --check .
 
-      - name: Run Jest tests
+      - name: Run Tests
         run: npm test -- --watchAll=false
 
-      # ---------------------------
-      # 🔍 SonarCloud Integration
-      # ---------------------------
+      - name: Build project
+        run: npm run build
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: build/
+
       - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@v2
+        uses: SonarSource/sonarcloud-github-action@master
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.projectKey=nilesbanu_frontend-ci-demo
+            -Dsonar.organization=nilesbanu
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
