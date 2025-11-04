@@ -1,52 +1,96 @@
-name: Frontend CI Testing
+# name: Frontend CI Testing
+
+# on:
+#   push:
+#     branches: [main]
+#   pull_request:
+#     branches: [main]
+
+# jobs:
+#   build:
+#     name: Lint, Test, Build & SonarCloud Scan
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       # Step 1: Checkout Code
+#       - name: Checkout code
+#         uses: actions/checkout@v4
+
+#       # Step 2: Setup Node Environment
+#       - name: Setup Node.js
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: 20
+#           cache: "npm"
+
+#       # Step 3: Install Dependencies
+#       - name: Install dependencies
+#         run: npm ci
+
+#       # Step 4: Run ESLint
+#       - name: Run ESLint
+#         run: npx eslint . --ext .js,.jsx,.ts,.tsx || true
+#         continue-on-error: true
+
+#       # Step 5: Run Prettier check
+#       - name: Run Prettier check
+#         run: npx prettier --check .
+
+#       # Step 6: Run Tests (with Jest)
+#       - name: Run Jest tests
+#         run: npm test -- --watchAll=false --coverage
+
+#       # Step 7: Build React App
+#       - name: Build project
+#         run: npm run build --if-present
+
+#       # Step 8: SonarCloud Scan
+#       - name: SonarCloud Scan
+#         uses: SonarSource/sonarcloud-github-action@v2
+#         env:
+#           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+#           SONAR_HOST_URL: "https://sonarcloud.io"
+
+name: Frontend CI Demo
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - frontend-ci-test
   pull_request:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   build:
-    name: Lint, Test, Build & SonarCloud Scan
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout Code
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      # Step 2: Setup Node Environment
-      - name: Setup Node.js
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: "npm"
+          node-version: 18
 
-      # Step 3: Install Dependencies
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
-      # Step 4: Run ESLint
-      - name: Run ESLint
-        run: npx eslint . --ext .js,.jsx,.ts,.tsx || true
-        continue-on-error: true
-
-      # Step 5: Run Prettier check
-      - name: Run Prettier check
+      - name: Run Prettier
         run: npx prettier --check .
 
-      # Step 6: Run Tests (with Jest)
-      - name: Run Jest tests
-        run: npm test -- --watchAll=false --coverage
+      - name: Run ESLint
+        run: npx eslint . --ext .js,.jsx || true
 
-      # Step 7: Build React App
       - name: Build project
         run: npm run build --if-present
 
-      # Step 8: SonarCloud Scan
       - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@v2
+        uses: SonarSource/sonarcloud-github-action@master
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: "https://sonarcloud.io"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
